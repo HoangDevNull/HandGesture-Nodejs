@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"
+      integrity="sha256-bQmrZe4yPnQrLTY+1gYylfNMBuGfnT/HKsCGX+9Xuqo="
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <button onclick="startWebcam();">Start WebCam</button>
+    <button onclick="stopWebcam();">Stop WebCam</button>
+    <video
+      onclick="snapshot(this);"
+      width="400"
+      height="400"
+      id="video"
+      controls
+      autoplay
+    ></video>
+    <canvas id="myCanvas" width="400" height="350"></canvas>
+    <script>
+      // const URL = "http://localhost:3000";
+      // var socket = io(URL);
+      // socket.on("connect", () => {
+      //   console.log("connect to" + URL);
+      // });
+      // socket.on("frame", (image) => {
+      //   const imageEle = document.getElementById("image");
+      //   imageEle.src = `data:image/jpeg;base64,${image}`;
+      // });
+      // socket.on("disconnect", () => {
+      //   console.log("disconnect to" + URL);
+      // });
+
+      navigator.getUserMedia =
+        navigator.getUserMedia ||
+        navigator.webkitGetUserMedia ||
+        navigator.mozGetUserMedia ||
+        navigator.msGetUserMedia;
+    </script>
+  </body>
+</html>
