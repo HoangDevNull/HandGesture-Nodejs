@@ -38,6 +38,16 @@ exports.runVideoDetection = (src, detect) => {
     });
 };
 
+const pngPrefix = 'data:image/jpeg;base64,';
+const jpgPrefix = 'data:image/png;base64,';
+
+exports.decodeFromBase64 = (base64DataString) => {
+    const base64Data = base64DataString.replace(pngPrefix, '').replace(jpgPrefix, '');
+    const buffer = Buffer.from(base64Data, 'base64');
+    const img = cv.imdecode(buffer);
+    return img;
+};
+
 exports.drawRectAroundBlobs = (binaryImg, dstImg, minPxSize, fixedRectWidth) => {
     const {
         centroids,
