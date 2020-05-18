@@ -20,7 +20,7 @@ var prewViewItv;
 function startWebcam() {
   if (navigator.getUserMedia) {
     navigator.getUserMedia(
-      { video: {}, audio: false },
+      { video: true, audio: false },
       (stream) => {
         video.srcObject = stream;
       },
@@ -28,11 +28,11 @@ function startWebcam() {
         console.log(err);
       }
     );
-    prewViewItv = setInterval(() => {
-      viewVideo(video, ctx);
-      socket.emit("data", canvas.toDataURL());
+    // prewViewItv = setInterval(() => {
+    //   viewVideo(video, ctx);
+    //   socket.emit("data", canvas.toDataURL());
 
-    }, 200);
+    // }, 200);
   }
 
 }

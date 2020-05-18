@@ -9,12 +9,38 @@
       integrity="sha256-bQmrZe4yPnQrLTY+1gYylfNMBuGfnT/HKsCGX+9Xuqo="
       crossorigin="anonymous"
     ></script>
+    <style>
+      .rect {
+        border: 2px solid red;
+        width: 350px;
+        height: 350px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 100;
+      }
+      video {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotateY(180deg);
+        -webkit-transform: translate(-50%, -50%) rotateY(180deg); /* Safari and Chrome */
+        -moz-transform: translate(-50%, -50%) rotateY(180deg); /* Firefox */
+      }
+      button {
+
+      }
+    </style>
   </head>
+
   <body>
     <button onclick="startWebcam();">Start WebCam</button>
     <button onclick="stopWebcam();">Stop WebCam</button>
-    <video width="640" height="480" id="video" controls autoplay></video>
-    <canvas id="myCanvas" width="640" height="480"></canvas>
+    <video width="1024" height="768" id="video" controls autoplay></video>
+    <div class="rect"></div>
+
+    <canvas id="myCanvas"></canvas>
 
     <script src="http://localhost:3000/app.js"></script>
   </body>
