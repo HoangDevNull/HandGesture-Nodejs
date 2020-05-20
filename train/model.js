@@ -14,32 +14,51 @@ async function getModel() {
     // the convolution operation that takes place in this layer.
     model.add(tf.layers.conv2d({
         inputShape: [IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_CHANNELS],
-        kernelSize: 5,
-        filters: 8,
-        strides: 1,
+        kernelSize: [2, 2],
+        filters: 16,
+        padding: "same",
         activation: 'relu',
-        kernelInitializer: 'varianceScaling'
+        name: "conv1"
     }));
-
     // The MaxPooling layer acts as a sort of downsampling using max values
     // in a region instead of averaging.
-    model.add(tf.layers.maxPooling2d({ poolSize: [2, 2], strides: [2, 2] }));
+    model.add(tf.layers.maxPooling2d({ poolSize: [2, 2], strides: 2, name: "pool1" }));
 
     // Repeat another conv2d + maxPooling stack.
     // Note that we have more filters in the convolution.
     model.add(tf.layers.conv2d({
-        kernelSize: 5,
-        filters: 16,
-        strides: 1,
+        kernelSize: [5, 5],
+        filters: 32,
+        padding: "same",
         activation: 'relu',
-        kernelInitializer: 'varianceScaling'
+        name: "conv2"
     }));
-    model.add(tf.layers.maxPooling2d({ poolSize: [2, 2], strides: [2, 2] }));
+    model.add(tf.layers.maxPooling2d({ poolSize: [5, 5], strides: 5 }));
+
+    model.add(tf.layers.conv2d({
+        kernelSize: [5, 5],
+        filters: 64,
+        padding: "same",
+        activation: 'relu',
+        name: "conv3"
+    }));
 
     // Now we flatten the output from the 2D filters into a 1D vector to prepare
     // it for input into our last layer. This is common practice when feeding
     // higher dimensional data to a final classification output layer.
-    model.add(tf.layers.flatten());
+    model.add(tf.layers.flatten({
+        // inputShape: [1, 1, 64]
+    }));
+
+    model.add(tf.layers.dense({
+        units: 128,
+        kernelInitializer: 'varianceScaling',
+        activation: 'relu'
+    }));
+
+    model.add(tf.layers.dropout({
+        rate: 0.2,
+    }));
 
     // Our last layer is a dense layer which has 10 output units, one for each
     // output class (i.e. 0, 1, 2, 3, 4, 5, 6, 7, 8, 9).
@@ -56,6 +75,30 @@ async function getModel() {
     const optimizer = tf.train.adam();
     model.compile({
         optimizer: optimizer,
+        loss: 'categoricalCrossentropy',
+        metrics: ['accuracy'],
+    });
+
+    model.summary();
+
+    return model;
+}
+
+
+async function getModel2() {
+
+    const model = tf.sequential();
+    model.add(tf.layers.conv2d({
+        inputShape: [50, 50, 1], // numberOfChannels = 3 for colorful images and one otherwise
+        filters: 32,
+        kernelSize: 3,
+        activation: 'relu',
+    }));
+    model.add(tf.layers.flatten());
+    model.add(tf.layers.dense({ units: 3, activation: 'softmax' }));
+
+    model.compile({
+        optimizer: tf.train.adam(),
         loss: 'categoricalCrossentropy',
         metrics: ['accuracy'],
     });
@@ -87,5 +130,6 @@ async function loadModel(folder) {
 module.exports = {
     getModel,
     train,
-    loadModel
+    loadModel,
+    getModel2
 }
