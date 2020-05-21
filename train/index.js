@@ -7,18 +7,18 @@ const { getModel, train, loadModel } = require("./model");
 
 
 async function run() {
-    const data = await dataset();
-    const model = await getModel();
+    // const data = await dataset();
+    // const model = await getModel();
 
-    await train(model, data);
+    // await train(model, data);
 
-    console.log(`train finish`);
-    await model.save(`file://./public/models/test_model`);
+    // console.log(`train finish`);
+    // await model.save(`file://./public/models/test_model`);
 
-    // const model = await loadModel("test_model");
-    const testData1 = await testImage(0, 1);
-    const testData2 = await testImage(1, 1);
-    const testData3 = await testImage(2, 1);
+    const model = await loadModel("test_model");
+    const testData1 = await testImage(0, 500);
+    const testData2 = await testImage(1, 200);
+    const testData3 = await testImage(2, 33);
 
     let result1 = model.predict(testData1).arraySync();
     let result2 = model.predict(testData2).arraySync();

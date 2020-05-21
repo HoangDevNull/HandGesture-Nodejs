@@ -16,10 +16,17 @@ const IMAGE_LARGE = 2400;
 
 async function testImage(folder, index) {
     const imageBuffer = await readFile(path.join(__dirname, `${URL}/${folder}/${index}.jpg`));
-    tensorFeature = tfnode.node.decodeImage(imageBuffer); // create a tensor for the image
+    let tensorFeature = tfnode.node.decodeImage(imageBuffer); // create a tensor for the image
     return tf.stack([tensorFeature]);
 }
 
+
+async function convertBufferToTensor(bufferData) {
+
+    let data = new Uint8Array(bufferData.getData().buffer);
+    let tFrame = tf.stack([tf.tensor3d(data, [50, 50, 1])]);
+    return tFrame;
+}
 
 const loadFeatureData = async () => {
     try {
@@ -60,5 +67,6 @@ const dataset = async () => {
 
 module.exports = {
     dataset,
-    testImage
+    testImage,
+    convertBufferToTensor
 }

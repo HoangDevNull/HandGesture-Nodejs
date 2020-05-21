@@ -1,7 +1,7 @@
 const cv = require('opencv4nodejs');
 // const { grabFrames } = require("./helper/utils");
 const grabFrames = (delay, onFrame) => {
-    const devicePort = 1;
+    const devicePort = 0;
     const cap = new cv.VideoCapture(devicePort);
     let done = false;
     const intvl = setInterval(() => {
@@ -57,9 +57,6 @@ const delay = 10;
 grabFrames(delay, (frame) => {
 
     let resizedImg = frame.resizeToMax(640).flip(1);
-
-    console.log(resizedImg);
-
     // Create croped image to wrap the hand
     let cropedImage = resizedImg.getRegion(new cv.Rect(100, 100, 350, 350));
     const handMask = makeHandMask(cropedImage);

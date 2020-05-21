@@ -1,4 +1,4 @@
-const URL = "http://192.168.233.1:3000/";
+const URL = "http://localhost:3000/";
 var socket = io(URL);
 socket.on("connect", () => {
   console.log("connect to" + URL);
@@ -28,11 +28,10 @@ function startWebcam() {
         console.log(err);
       }
     );
-    // prewViewItv = setInterval(() => {
-    //   viewVideo(video, ctx);
-    //   socket.emit("data", canvas.toDataURL());
-
-    // }, 200);
+    prewViewItv = setInterval(() => {
+      viewVideo(video, ctx);
+      socket.emit("data", canvas.toDataURL());
+    }, 200);
   }
 
 }

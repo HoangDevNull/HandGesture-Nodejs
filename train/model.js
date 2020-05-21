@@ -2,6 +2,11 @@ const tf = require("@tensorflow/tfjs");
 
 const tfnode = require("@tensorflow/tfjs-node");
 
+
+/**
+ * Todo : Configuration model
+ *  CNN model
+ */
 async function getModel() {
     const model = tf.sequential();
 
@@ -60,8 +65,6 @@ async function getModel() {
         rate: 0.2,
     }));
 
-    // Our last layer is a dense layer which has 10 output units, one for each
-    // output class (i.e. 0, 1, 2, 3, 4, 5, 6, 7, 8, 9).
     const NUM_OUTPUT_CLASSES = 3;
     model.add(tf.layers.dense({
         units: NUM_OUTPUT_CLASSES,
@@ -85,27 +88,7 @@ async function getModel() {
 }
 
 
-async function getModel2() {
-
-    const model = tf.sequential();
-    model.add(tf.layers.conv2d({
-        inputShape: [50, 50, 1], // numberOfChannels = 3 for colorful images and one otherwise
-        filters: 32,
-        kernelSize: 3,
-        activation: 'relu',
-    }));
-    model.add(tf.layers.flatten());
-    model.add(tf.layers.dense({ units: 3, activation: 'softmax' }));
-
-    model.compile({
-        optimizer: tf.train.adam(),
-        loss: 'categoricalCrossentropy',
-        metrics: ['accuracy'],
-    });
-
-    return model;
-}
-
+// Training model
 async function train(model, data) {
     const { xs, ys } = data;
     const BATCH_SIZE = 512;
@@ -115,7 +98,7 @@ async function train(model, data) {
         shuffle: true,
     });
 }
-
+// Load model from disk
 async function loadModel(folder) {
     // create handler to get model and weight file in to handler variable
     const handler = tfnode.io.fileSystem(
@@ -125,11 +108,14 @@ async function loadModel(folder) {
     const model = await tf.loadLayersModel(handler);
     return model;
 }
-
+// Predict sameple with tensor data : tensor4d [1,50,50,1]
+async function predictData(model, data) {
+    return model.predict(data).arraySync();
+}
 
 module.exports = {
     getModel,
     train,
     loadModel,
-    getModel2
+    predictData
 }
