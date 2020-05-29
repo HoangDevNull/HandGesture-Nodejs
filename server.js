@@ -1,7 +1,9 @@
 const cv = require("opencv4nodejs");
 const express = require("express");
 const app = express();
-const path = require("path");
+
+const { loadModel, predictData } = require("./train/model");
+const { convertBufferToTensor } = require("./train/dataset");
 // create server
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
@@ -10,6 +12,9 @@ app.use(express.static("public"));
 
 app.get("/", (req, res) => {
   res.redirect("index.html");
+});
+app.get("/handtrack", (req, res) => {
+  res.redirect("handtrack.html");
 });
 
 server.listen(3000, () => {
@@ -38,12 +43,9 @@ const makeHandMask = (img) => {
   const erotion = dilation.erode(kernel,
     point,
     1);
-
-
   return erotion;
 };
 var img;
-
 io.on("connection", (socket) => {
   socket.on('data', async function (data) {// listen on client emit 'data'
     let base64 = data.split(',')[1];
@@ -51,28 +53,31 @@ io.on("connection", (socket) => {
   })
 });
 
-const intvl = setInterval(() => {
-  if (img) {
-    let flipImage = img.flip(1);
-    // Create croped image to wrap the hand
-    // let cropedImage = resizedImg.getRegion(new cv.Rect(100, 100, 350, 350));
-    // flipImage.drawRectangle(
-    //   new cv.Point(100, 100), // top-left
-    //   new cv.Point(350, 350), // bottom right
-    //   { color: new cv.Vec3(255, 0, 0), thickness: 1 }
-    // );
-    // create threshold image
-    const handMask = makeHandMask(flipImage);
 
-    cv.imshow('origin', flipImage);
-    cv.imshow('handMask', handMask);
-  }
-  const key = cv.waitKey(10);
-  done = key !== -1 && key !== 255;
-  if (done) {
-    clearInterval(intvl);
-    console.log('Key pressed, exiting.');
-    process.exit(1);
-  }
-}, 200);
 
+(async () => {
+  const model = await loadModel("test_model");
+  const intvl = setInterval(async () => {
+    if (img) {
+      let resizedImg = img.resizeToMax(640).flip(1);
+      // Create croped image to wrap the hand
+      // let cropedImage = resizedImg.getRegion(new cv.Rect(100, 100, 350, 350));
+      const handMask = makeHandMask(resizedImg);
+      const imageData = handMask.resize(50, 50);
+
+      let tFrame = await convertBufferToTensor(imageData);
+
+      if (model) console.log(model.predict(tFrame).arraySync());
+
+      cv.imshow('handMask', handMask);
+      cv.imshow('result', imageData);
+    }
+    const key = cv.waitKey(10);
+    done = key !== -1 && key !== 255;
+    if (done) {
+      clearInterval(intvl);
+      console.log('Key pressed, exiting.');
+      process.exit(1);
+    }
+  }, 200);
+})();

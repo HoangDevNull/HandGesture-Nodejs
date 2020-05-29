@@ -1,5 +1,4 @@
 const cv = require('opencv4nodejs');
-// const { grabFrames } = require("./helper/utils");
 const grabFrames = (delay, onFrame) => {
     const devicePort = 0;
     const cap = new cv.VideoCapture(devicePort);
