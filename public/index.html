@@ -10,23 +10,17 @@
       crossorigin="anonymous"
     ></script>
     <style>
-      .rect {
-        border: 2px solid red;
-        width: 350px;
-        height: 350px;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 100;
+      html,
+      * {
+        box-sizing: border-box;
+        padding: 0;
+        margin: 0;
       }
       video {
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%) rotateY(180deg);
-        -webkit-transform: translate(-50%, -50%) rotateY(180deg); /* Safari and Chrome */
-        -moz-transform: translate(-50%, -50%) rotateY(180deg); /* Firefox */
+        transform: translate(-50%, -50%);
       }
 
       button {
@@ -41,18 +35,96 @@
         box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25),
           0 10px 10px rgba(0, 0, 0, 0.22);
       }
+      .config-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+      }
+      .left {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        height: auto;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+      .left div {
+        height: 100px;
+      }
     </style>
   </head>
 
   <body>
-    <button onclick="startWebcam();">Start WebCam</button>
-    <button onclick="stopWebcam();">Stop WebCam</button>
     <video width="500" height="500" id="video" controls autoplay></video>
     <!-- <div class="rect"></div> -->
 
     <canvas id="myCanvas" hidden="true" width="500" height="500"></canvas>
+    <div class="left">
+      <div>
+        <button onclick="startWebcam();">Start WebCam</button>
+        <button onclick="stopWebcam();">Stop WebCam</button>
+      </div>
+      <!-- Load the handtrackjs model. -->
+      <div class="config-wrapper">
+        <label for="H_L">H_L</label>
+        <input
+          type="range"
+          id="H_L"
+          min="0"
+          max="180"
+          onchange="rangeChange(`H_L ${this.value}`);"
+        />
 
-    <!-- Load the handtrackjs model. -->
+        <label for="H_H">H_H</label>
+        <input
+          type="range"
+          id="H_H"
+          min="0"
+          max="180"
+          onchange="rangeChange(`H_H ${this.value}`);"
+        />
+
+        <label for="S_L">S_L</label>
+        <input
+          type="range"
+          id="S_L"
+          min="0"
+          max="255"
+          onchange="rangeChange(`S_L ${this.value}`);"
+        />
+
+        <label for="S_H">S_H</label>
+        <input
+          type="range"
+          id="S_H"
+          min="0"
+          max="255"
+          onchange="rangeChange(`S_H ${this.value}`);"
+        />
+
+        <label for="V_L">V_L</label>
+        <input
+          type="range"
+          id="V_L"
+          name="points"
+          min="0"
+          max="255"
+          onchange="rangeChange(`V_L ${this.value}`);"
+        />
+
+        <label for="V_H">V_H</label>
+        <input
+          type="range"
+          id="V_H"
+          min="0"
+          max="255"
+          onchange="rangeChange(`V_H ${this.value}`);"
+        />
+      </div>
+    </div>
 
     <script src="http://localhost:3000/app.js"></script>
   </body>

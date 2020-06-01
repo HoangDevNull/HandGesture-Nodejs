@@ -33,7 +33,6 @@ function startWebcam() {
       socket.emit("data", canvas.toDataURL());
     }, 200);
   }
-
 }
 
 function stopWebcam(e) {
@@ -52,3 +51,15 @@ function stopWebcam(e) {
 function viewVideo(video, context) {
   context.drawImage(video, 0, 0);
 }
+
+
+// for HSV range config
+function rangeChange(str) {
+  let data = str.split(" ");
+  let name = data[0];
+  let value = data[1];
+  socket.emit(name, value);
+}
+
+
+
