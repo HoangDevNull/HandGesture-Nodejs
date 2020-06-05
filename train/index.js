@@ -3,19 +3,19 @@ const tf = require('@tensorflow/tfjs');
 const tfnode = require('@tensorflow/tfjs-node');
 
 const { dataset, testImage } = require("./dataset");
-const { getModel, train, loadModel } = require("./model");
+const { getModel, getModel2, train, loadModel } = require("./model");
 
 
 async function run() {
-    // const data = await dataset();
-    // const model = await getModel();
+    const data = await dataset();
+    const model = await getModel2();
 
-    // await train(model, data);
+    await train(model, data);
 
-    // console.log(`train finish`);
-    // await model.save(`file://./public/models/test_model`);
+    console.log(`train finish`);
+    await model.save(`file://./public/models/test_model2`);
 
-    const model = await loadModel("test_model");
+    // const model = await loadModel("test_model");
     const testData1 = await testImage(0, 500);
     const testData2 = await testImage(1, 200);
     const testData3 = await testImage(2, 33);

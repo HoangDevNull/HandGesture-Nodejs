@@ -4,6 +4,7 @@ const app = express();
 
 const { loadModel, predictData } = require("./train/model");
 const { convertBufferToTensor } = require("./train/dataset");
+const { makeHandMask, getHandContour, getHSVConfig, saveHSVConfig } = require("./utils");
 // create server
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
@@ -21,41 +22,13 @@ server.listen(3000, () => {
   console.log("app is runing");
 });
 
-
-let word = ["A", "B", "C"];
-
-const skinRange = {
-  H_L: 0, H_H: 0, S_L: 0, S_H: 0, V_L: 0, V_H: 0
-};
-
+// Declare some global variable
 const blue = new cv.Vec(255, 0, 0);
 const green = new cv.Vec(0, 255, 0);
 const red = new cv.Vec(0, 0, 255);
-
 var img;
-
-const makeHandMask = (img) => {
-  // filter by skin color
-  const imgHLS = img.cvtColor(cv.COLOR_BGR2HLS);
-  const rangeMask = imgHLS.inRange(
-    new cv.Vec(skinRange.H_L, skinRange.S_L, skinRange.V_L),
-    new cv.Vec(skinRange.H_H, skinRange.S_H, skinRange.V_H));
-
-  // remove noise
-  const blurred = rangeMask.blur(new cv.Size(10, 10));
-  const thresholded = blurred.threshold(0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
-  // const kernel = new cv.Mat(5, 5, cv.CV_8U, 1);
-  // const point = new cv.Point(-1, -1);
-  // const dilation = thresholded.dilate(
-  //   kernel,
-  //   point,
-  //   1
-  // );
-  // const erotion = dilation.erode(kernel,
-  //   point,
-  //   1);
-  return thresholded;
-};
+var skinRange = null;
+getHSVConfig().then(data => skinRange = data).catch(err => console.log(err))
 
 io.on("connection", (socket) => {
   socket.on('data', async function (data) {// listen on client emit 'data'
@@ -67,6 +40,7 @@ io.on("connection", (socket) => {
   arr.forEach(ele => {
     socket.on(ele, function (data) {// listen on client emit 'data'
       skinRange[ele] = data;
+      saveHSVConfig(skinRange);
     });
   })
 });
@@ -76,32 +50,45 @@ io.on("connection", (socket) => {
   const model = await loadModel("test_model");
   const intvl = setInterval(async () => {
     if (img) {
-      let resizedImg = img.resizeToMax(640).flip(1);
+      let resizedImg = img.resizeToMax(640);
       // Create croped image to wrap the hand
-      let cropedImage = resizedImg.getRegion(new cv.Rect(0, 0, 500, 500));
-      const handMask = makeHandMask(cropedImage);
+      // let cropedImage = resizedImg.getRegion(new cv.Rect(0, 0, 300, 300));
+      const handMask = makeHandMask(resizedImg, skinRange);
+      const handContour = getHandContour(handMask);
+
+      if (!handContour) {
+        return;
+      }
+
+      const imgContours = handContour && handContour.map((contour) => {
+        return contour.getPoints();
+      });
+
+      // draw bounding box and center line
+      resizedImg.drawContours(imgContours, -1, blue, 2);
       const imageData = handMask.resize(50, 50);
 
-      let tFrame = await convertBufferToTensor(imageData);
 
-      if (model) {
-        setTimeout(() => {
-          let predicts = model.predict(tFrame).arraySync()[0];
-          let max = Math.max(...predicts);
-          let predictWord = word[predicts.indexOf(max)];
-          console.log(predictWord)
-          // const fontScale = 2;
-          // handMask.putText(
-          //   String(predictWord),
-          //   new cv.Point(20, 60),
-          //   cv.FONT_ITALIC,
-          //   fontScale,
-          //   { color: green, thickness: 2 }
-          // );
-        }, 300)
-      }
+      // let tFrame = await convertBufferToTensor(imageData);
+
+      // if (model) {
+      //   setTimeout(() => {
+      //     let predicts = model.predict(tFrame).arraySync()[0];
+      //     let max = Math.max(...predicts);
+      //     let predictWord = word[predicts.indexOf(max)];
+      //     console.log(predictWord)
+      //     // const fontScale = 2;
+      //     // handMask.putText(
+      //     //   String(predictWord),
+      //     //   new cv.Point(20, 60),
+      //     //   cv.FONT_ITALIC,
+      //     //   fontScale,
+      //     //   { color: green, thickness: 2 }
+      //     // );
+      //   }, 300)
+      // }
       cv.imshow('handMask', handMask);
-      cv.imshow('handMask2', imageData);
+      cv.imshow('handMask2', resizedImg);
     }
     const key = cv.waitKey(10);
     done = key !== -1 && key !== 255;

@@ -1,4 +1,7 @@
 const puppeteer = require("puppeteer");
+
+require("dotenv").config();
+
 const {
   passwordQuestion,
   usernameQuestion,
@@ -6,14 +9,18 @@ const {
   googleLogin,
 } = require("./helper");
 
-const { username, password } = require("../config");
 (async () => {
-  //   const username = await usernameQuestion();
-  //   const password = await passwordQuestion();
+  // const username = await usernameQuestion();
+  // const password = await passwordQuestion();
+
+  const username = process.env.EMAIL;
+  const password = process.env.PASS;
 
   const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
   await page.setViewport({ width: 1366, height: 768 });
+
+  page.waitFor(1000);
   await page.goto(
     "https://docs.google.com/forms/d/e/1FAIpQLSek-GKkIm87UhaZnpCbMOxmIIDWvlmr-rfjHKR9NAEttOGPtQ/viewform"
   );
@@ -26,7 +33,9 @@ const { username, password } = require("../config");
   // wait for page load full content
   await navigationPromise;
 
-  await page.screenshot({ path: "test.png" });
+
+
+  //   await page.screenshot({ path: "test.png" });
 
   // browser coding
   await page.evaluate(() => {
@@ -42,7 +51,7 @@ const { username, password } = require("../config");
       return answerItem;
     });
 
-    // question 1 anwser 1
+    // question 1 anwser 2
     let answer1 = s[0][1].querySelector("label");
     answer1.click();
   });
