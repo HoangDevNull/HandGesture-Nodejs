@@ -26,9 +26,7 @@ server.listen(3000, () => {
 const blue = new cv.Vec(255, 0, 0);
 const green = new cv.Vec(0, 255, 0);
 const red = new cv.Vec(0, 0, 255);
-const word = ["Thumb down", "Palm (Horizontal)", "L",
-  "Fist (Horizontal)", "Fist (Vertical)", "Thumbs up",
-  "Index", "OK", "Palm (Vertical)", "C"];
+const word = ["down", "palm", "l", "fist", "fist_moved", "thumb", "index", "ok", "palm_moved", "c"]
 var img;
 var skinRange = null;
 const kernel = new cv.Mat(3, 3, cv.CV_8U, 1);
@@ -61,7 +59,7 @@ io.on("connection", (socket) => {
     if (img) {
       let resizedImg = img.resizeToMax(640).flip(1);
       // Create croped image to wrap the hand
-      let cropedImage = resizedImg.getRegion(new cv.Rect(0, 0, 300, 350)).cvtColor(cv.COLOR_BGR2GRAY).copy();
+      let cropedImage = resizedImg.getRegion(new cv.Rect(0, 0, 300, 350)).copy();
 
       // get background image
       if (k < 20) {
@@ -70,65 +68,65 @@ io.on("connection", (socket) => {
       }
       // difference image
       let diff = cropedImage.absdiff(bg).copy();
-
-      // const mask = new cv.Mat(diff.rows, diff.cols, cv.CV_8UC1, 0);
       // let th = 10;
       // for (var i = 0; i < diff.rows; i++) {
       //   for (var j = 0; j < diff.cols; j++) {
-      //     let pix = diff.atRaw(i, j);
-      //     let val = (pix[0] + pix[1] + pix[2]);
-      //     console.log(pix)
+      //     let pix = diff.at(i, j);
+      //     let val = (pix.x + pix.y + pix.z);
       //     if (val > th) {
-      //       mask.set(j, i, [255]);
+      //       mask.set(i, j, [255]);
+      //     } else {
+      //       mask.set(i, j, [0]);
       //     }
       //   }
       // }
 
-      cv.imshow("result", diff);
-      // cv.imshow("mark", mask);
+      // cv.imshow("result", diff);
+
 
       // let handMask = diff.threshold(25, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
       // handMask = handMask.morphologyEx(kernel, cv.MORPH_OPEN, new cv.Point(2, 2));
 
 
-      // // const handMask = makeHandMask(cropedImage, skinRange);
-      // const handContour = getHandContour(handMask);
+      const handMask = makeHandMask(diff, skinRange);
 
-      // if (!handContour) {
-      //   return;
-      // }
+      const handContour = getHandContour(handMask);
 
-      // const imgContours = handContour && handContour.map((contour) => {
-      //   return contour.getPoints();
-      // });
+      if (!handContour) {
+        return;
+      }
 
-      // // // draw bounding box and center line
-      // resizedImg.drawContours(imgContours, -1, blue, 2);
-      // const imageData = handMask.resize(120, 320);
+      const imgContours = handContour && handContour.map((contour) => {
+        return contour.getPoints();
+      });
+
+      // draw bounding box and center line
+      resizedImg.drawContours(imgContours, -1, blue, 2);
+      const imageData = handMask.resize(120, 320);
 
 
-      // let tFrame = await convertBufferToTensor(imageData);
+      let tFrame = await convertBufferToTensor(imageData);
 
-      // let contourArea = handContour[0] !== undefined ? handContour[0].area : 0;
-      // if (model && contourArea > 30000) {
-      //   setTimeout(() => {
-      //     let predicts = model.predict(tFrame).arraySync()[0];
-      //     let max = Math.max(...predicts);
-      //     let predictWord = word[predicts.indexOf(max)];
-      //     const fontScale = 2;
-      //     console.log(predictWord)
-      //     resizedImg.putText(
-      //       String(predictWord),
-      //       new cv.Point(20, 60),
-      //       cv.FONT_ITALIC,
-      //       fontScale,
-      //       { color: green, thickness: 2 }
-      //     );
-      //   }, 300)
-      // }
-      // cv.imshow('background', bg);
-      // cv.imshow('handMask2', handMask);
-      // cv.imshow('result', resizedImg);
+      let contourArea = handContour[0] !== undefined ? handContour[0].area : 0;
+      if (model && contourArea > 20000) {
+        setTimeout(() => {
+          let predicts = model.predict(tFrame).arraySync()[0];
+          let max = Math.max(...predicts);
+          let predictWord = word[predicts.indexOf(max)];
+          const fontScale = 2;
+          console.log(predictWord)
+          resizedImg.putText(
+            String(predictWord),
+            new cv.Point(20, 60),
+            cv.FONT_ITALIC,
+            fontScale,
+            { color: green, thickness: 2 }
+          );
+        }, 300)
+      }
+      cv.imshow('background', bg);
+      cv.imshow('handMask2', handMask);
+      cv.imshow('result', resizedImg);
     }
     const key = cv.waitKey(10);
     done = key !== -1 && key !== 255;

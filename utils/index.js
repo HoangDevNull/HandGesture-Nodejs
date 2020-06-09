@@ -20,7 +20,6 @@ const transformToArray = (image, imageBuffer) => {
 
 const removeBackground = (frame, background) => {
     var thresholdOffset = 10;
-
     for (var i = 0; i < frame.rows; i++) {
         for (var j = 0; j < frame.cols; j++) {
             const framePixel = frame.at(i, j);
@@ -41,21 +40,12 @@ const makeHandMask = (img, skinRange) => {
         new cv.Vec(skinRange.H_L, skinRange.S_L, skinRange.V_L),
         new cv.Vec(skinRange.H_H, skinRange.S_H, skinRange.V_H));
 
-
-
-
-
     // remove noise
     const blurred = rangeMask.blur(new cv.Size(5, 5));
 
-
     const kernel = new cv.Mat(3, 3, cv.CV_8U, 1);
     const point = new cv.Point(-1, -1);
-    // const dilation = blurred.dilate(
-    //     kernel,
-    //     point,
-    //     1
-    // );
+
     // const erotion = dilation.erode(kernel,
     //     point,
     //     1);
@@ -63,7 +53,15 @@ const makeHandMask = (img, skinRange) => {
     // const open = rangeMask.morphologyEx(kernel, cv.MORPH_OPEN, new cv.Point(2, 2), 3);
     // const close = open.morphologyEx(kernel, cv.MORPH_CLOSE, new cv.Point(2, 2), 3);
     const thresholded = blurred.threshold(0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
-    return thresholded;
+    const dilation = thresholded.dilate(
+        kernel,
+        point,
+        2
+    );
+    const erotion = dilation.erode(kernel,
+        point,
+        2);
+    return erotion;
 };
 
 
