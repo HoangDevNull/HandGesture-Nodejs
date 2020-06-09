@@ -13,7 +13,7 @@ async function run() {
     await train(model, data);
 
     console.log(`train finish`);
-    await model.save(`file://./public/models/test_model2`);
+    await model.save(`file://./public/models/test_model3`);
 
     // const model = await loadModel("test_model");
     const testData1 = await testImage(0, 500);

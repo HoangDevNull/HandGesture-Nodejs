@@ -101,53 +101,50 @@ function getModel2() {
     model.add(tf.layers.conv2d({
         inputShape: [IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_CHANNELS],
         kernelSize: [2, 2],
-        filters: 32,
-        padding: "same",
+        filters: 16,
         activation: 'relu',
         name: "conv1"
     }));
 
-    model.add(tf.layers.maxPooling2d({ poolSize: [2, 2], strides: 2, name: "pool1" }));
+    model.add(tf.layers.maxPooling2d({ poolSize: [2, 2], strides: [2, 2], padding: "same", name: "pool1" }));
 
     model.add(tf.layers.conv2d({
         kernelSize: [3, 3],
-        filters: 64,
-        padding: "same",
+        filters: 32,
         activation: 'relu',
         name: "conv2"
     }));
 
-    model.add(tf.layers.maxPooling2d({ poolSize: [2, 2], strides: 2 }));
+    model.add(tf.layers.maxPooling2d({ poolSize: [3, 3], padding: "same", name: "pool2" }));
 
     model.add(tf.layers.conv2d({
-        kernelSize: [3, 3],
+        kernelSize: [5, 5],
         filters: 64,
-        padding: "same",
         activation: 'relu',
         name: "conv3"
     }));
 
-    model.add(tf.layers.maxPooling2d({ poolSize: [2, 2], strides: 2 }));
+    model.add(tf.layers.maxPooling2d({ poolSize: [5, 5], strides: [5, 5], padding: "same", }));
 
     model.add(tf.layers.flatten());
 
     model.add(tf.layers.dense({
         units: 128,
-        kernelInitializer: 'varianceScaling',
         activation: 'relu'
     }));
 
-    const NUM_OUTPUT_CLASSES = 3;
+    model.add(tf.layers.dropout({ rate: 0.2 }))
+
+    const NUM_OUTPUT_CLASSES = 7;
     model.add(tf.layers.dense({
         units: NUM_OUTPUT_CLASSES,
-        kernelInitializer: 'varianceScaling',
         activation: 'softmax'
     }));
 
 
     // Choose an optimizer, loss function and accuracy metric,
     // then compile and return the model
-    const optimizer = tf.train.adam();
+    const optimizer = tf.train.sgd(0.01);
     model.compile({
         optimizer: optimizer,
         loss: 'categoricalCrossentropy',
@@ -164,10 +161,9 @@ async function train(model, data) {
     const { xs, ys } = data;
     const BATCH_SIZE = 64;
     return model.fit(xs, ys, {
-        batchSize: BATCH_SIZE,
-        epochs: 15,
+        epochs: 5,
         shuffle: true,
-        verbose: 2
+        verbose: 1
     });
 }
 // Load model from disk
