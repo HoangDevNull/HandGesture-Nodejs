@@ -43,7 +43,7 @@ const makeHandMask = (img, skinRange) => {
     // remove noise
     const blurred = rangeMask.blur(new cv.Size(5, 5));
 
-    const kernel = new cv.Mat(3, 3, cv.CV_8U, 1);
+    const kernel = new cv.Mat(5, 5, cv.CV_8U, 1);
     const point = new cv.Point(-1, -1);
 
     // const erotion = dilation.erode(kernel,
@@ -60,9 +60,10 @@ const makeHandMask = (img, skinRange) => {
     );
     const erotion = dilation.erode(kernel,
         point,
-        2);
+        1);
     return erotion;
 };
+
 
 
 

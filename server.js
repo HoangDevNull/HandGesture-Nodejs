@@ -68,25 +68,6 @@ io.on("connection", (socket) => {
       }
       // difference image
       let diff = cropedImage.absdiff(bg).copy();
-      // let th = 10;
-      // for (var i = 0; i < diff.rows; i++) {
-      //   for (var j = 0; j < diff.cols; j++) {
-      //     let pix = diff.at(i, j);
-      //     let val = (pix.x + pix.y + pix.z);
-      //     if (val > th) {
-      //       mask.set(i, j, [255]);
-      //     } else {
-      //       mask.set(i, j, [0]);
-      //     }
-      //   }
-      // }
-
-      // cv.imshow("result", diff);
-
-
-      // let handMask = diff.threshold(25, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
-      // handMask = handMask.morphologyEx(kernel, cv.MORPH_OPEN, new cv.Point(2, 2));
-
 
       const handMask = makeHandMask(diff, skinRange);
 
@@ -104,7 +85,6 @@ io.on("connection", (socket) => {
       resizedImg.drawContours(imgContours, -1, blue, 2);
       const imageData = handMask.resize(120, 320);
 
-
       let tFrame = await convertBufferToTensor(imageData);
 
       let contourArea = handContour[0] !== undefined ? handContour[0].area : 0;
@@ -117,7 +97,7 @@ io.on("connection", (socket) => {
           console.log(predictWord)
           resizedImg.putText(
             String(predictWord),
-            new cv.Point(20, 60),
+            new cv.Point(300, 300),
             cv.FONT_ITALIC,
             fontScale,
             { color: green, thickness: 2 }
@@ -125,6 +105,7 @@ io.on("connection", (socket) => {
         }, 300)
       }
       cv.imshow('background', bg);
+      cv.imshow('difference', diff);
       cv.imshow('handMask2', handMask);
       cv.imshow('result', resizedImg);
     }

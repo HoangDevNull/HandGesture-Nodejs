@@ -9,52 +9,7 @@
       integrity="sha256-bQmrZe4yPnQrLTY+1gYylfNMBuGfnT/HKsCGX+9Xuqo="
       crossorigin="anonymous"
     ></script>
-    <style>
-      html,
-      * {
-        box-sizing: border-box;
-        padding: 0;
-        margin: 0;
-      }
-      video {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-      }
-
-      button {
-        all: unset;
-        width: auto;
-        padding: 8px 10px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        margin: 300px 30px;
-      }
-      button:hover {
-        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25),
-          0 10px 10px rgba(0, 0, 0, 0.22);
-      }
-      .config-wrapper {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-      }
-      .left {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        height: auto;
-        position: absolute;
-        top: 0;
-        left: 0;
-      }
-      .left div {
-        height: 100px;
-      }
-    </style>
+    <link rel="stylesheet" href="http://localhost:3000/styles/style.css" />
   </head>
 
   <body>
@@ -63,7 +18,7 @@
 
     <canvas id="myCanvas" hidden="true" width="650" height="650"></canvas>
     <div class="left">
-      <div>
+      <div class="button-wrapper">
         <button onclick="startWebcam();">Start WebCam</button>
         <button onclick="stopWebcam();">Stop WebCam</button>
       </div>
@@ -126,6 +81,6 @@
       </div>
     </div>
 
-    <script src="http://localhost:3000/app.js"></script>
+    <script src="http://localhost:3000/javascript/app.js"></script>
   </body>
 </html>
