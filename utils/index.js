@@ -35,8 +35,8 @@ const removeBackground = (frame, background) => {
 
 const makeHandMask = (img, skinRange) => {
     // filter by skin color
-    const imgHLS = img.cvtColor(cv.COLOR_BGR2HLS);
-    const rangeMask = imgHLS.inRange(
+    const imgHSV = img.cvtColor(cv.COLOR_BGR2HSV);
+    const rangeMask = imgHSV.inRange(
         new cv.Vec(skinRange.H_L, skinRange.S_L, skinRange.V_L),
         new cv.Vec(skinRange.H_H, skinRange.S_H, skinRange.V_H));
 
@@ -52,7 +52,7 @@ const makeHandMask = (img, skinRange) => {
     // morphological operator - OPEN
     // const open = rangeMask.morphologyEx(kernel, cv.MORPH_OPEN, new cv.Point(2, 2), 3);
     // const close = open.morphologyEx(kernel, cv.MORPH_CLOSE, new cv.Point(2, 2), 3);
-    const thresholded = blurred.threshold(0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
+    const thresholded = blurred.threshold(15, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
     const dilation = thresholded.dilate(
         kernel,
         point,

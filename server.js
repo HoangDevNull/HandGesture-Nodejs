@@ -54,18 +54,19 @@ io.on("connection", (socket) => {
   var bg = null;
   const model = await loadModel("model_3");
   // var bgSubtractor = new cv.BackgroundSubtractorMOG2(500, 16, false);
-  // let out = bgSubtractor.apply(cropedImage).copy();
+
   const intvl = setInterval(async () => {
     if (img) {
       let resizedImg = img.resizeToMax(640).flip(1);
       // Create croped image to wrap the hand
       let cropedImage = resizedImg.getRegion(new cv.Rect(0, 0, 300, 350)).copy();
-
       // get background image
       if (k < 20) {
         bg = cropedImage.copy();
         k++;
       }
+
+      // let out = bgSubtractor.apply(cropedImage).copy();
       // difference image
       let diff = cropedImage.absdiff(bg).copy();
 
