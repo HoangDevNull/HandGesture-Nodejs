@@ -2,7 +2,8 @@ const tf = require('@tensorflow/tfjs');
 // Load the binding (CPU computation)
 const tfnode = require('@tensorflow/tfjs-node');
 
-const { dataset, testImage } = require("./dataset");
+const { testImage } = require("./dataset");
+const { dataset } = require("./dataset2");
 const { getModel, getModel2, train, loadModel } = require("./model");
 
 
@@ -13,7 +14,7 @@ async function run() {
     await train(model, data);
 
     console.log(`train finish`);
-    await model.save(`file://./public/models/test_model3`);
+    // await model.save(`file://./public/models/test_model3`);
 
     // const model = await loadModel("test_model");
     const testData1 = await testImage(0, 500);

@@ -91,8 +91,8 @@ async function getModel() {
 function getModel2() {
     const model = tf.sequential();
 
-    const IMAGE_WIDTH = 50;
-    const IMAGE_HEIGHT = 50;
+    const IMAGE_WIDTH = 120;
+    const IMAGE_HEIGHT = 320;
     const IMAGE_CHANNELS = 1;
 
     // In the first layer of our convolutional neural network we have
@@ -100,8 +100,8 @@ function getModel2() {
     // the convolution operation that takes place in this layer.
     model.add(tf.layers.conv2d({
         inputShape: [IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_CHANNELS],
-        kernelSize: [2, 2],
-        filters: 16,
+        kernelSize: [5, 5],
+        filters: 32,
         activation: 'relu',
         name: "conv1"
     }));
@@ -110,21 +110,21 @@ function getModel2() {
 
     model.add(tf.layers.conv2d({
         kernelSize: [3, 3],
-        filters: 32,
+        filters: 64,
         activation: 'relu',
         name: "conv2"
     }));
 
-    model.add(tf.layers.maxPooling2d({ poolSize: [3, 3], padding: "same", name: "pool2" }));
+    model.add(tf.layers.maxPooling2d({ poolSize: [2,2], padding: "same", name: "pool2" }));
 
     model.add(tf.layers.conv2d({
-        kernelSize: [5, 5],
+        kernelSize: [3,3],
         filters: 64,
         activation: 'relu',
         name: "conv3"
     }));
 
-    model.add(tf.layers.maxPooling2d({ poolSize: [5, 5], strides: [5, 5], padding: "same", }));
+    model.add(tf.layers.maxPooling2d({ poolSize: [2,2], padding: "same", }));
 
     model.add(tf.layers.flatten());
 
@@ -133,9 +133,7 @@ function getModel2() {
         activation: 'relu'
     }));
 
-    model.add(tf.layers.dropout({ rate: 0.2 }))
-
-    const NUM_OUTPUT_CLASSES = 7;
+    const NUM_OUTPUT_CLASSES = 10;
     model.add(tf.layers.dense({
         units: NUM_OUTPUT_CLASSES,
         activation: 'softmax'
@@ -144,7 +142,7 @@ function getModel2() {
 
     // Choose an optimizer, loss function and accuracy metric,
     // then compile and return the model
-    const optimizer = tf.train.sgd(0.01);
+    const optimizer = tf.train.adam();
     model.compile({
         optimizer: optimizer,
         loss: 'categoricalCrossentropy',
