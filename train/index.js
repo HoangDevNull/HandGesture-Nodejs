@@ -14,9 +14,9 @@ async function run() {
     await train(model, data);
 
     console.log(`train finish`);
-    // await model.save(`file://./public/models/test_model3`);
+    await model.save(`file://./public/models/CNN_model`);
 
-    // const model = await loadModel("test_model");
+    // const model = await loadModel("CNN_model");
     const testData1 = await testImage(0, 500);
     const testData2 = await testImage(1, 200);
     const testData3 = await testImage(2, 33);

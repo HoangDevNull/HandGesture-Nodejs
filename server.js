@@ -23,6 +23,7 @@ server.listen(3000, () => {
 });
 
 // Declare some global variable
+const font = cv.FONT_HERSHEY_COMPLEX;
 const blue = new cv.Vec(255, 0, 0);
 const green = new cv.Vec(0, 255, 0);
 const red = new cv.Vec(0, 0, 255);
@@ -52,6 +53,7 @@ io.on("connection", (socket) => {
 (async () => {
   var k = 0;
   var bg = null;
+  var predictWord = "";
   const model = await loadModel("model_3");
   // var bgSubtractor = new cv.BackgroundSubtractorMOG2(500, 16, false);
 
@@ -93,18 +95,17 @@ io.on("connection", (socket) => {
         setTimeout(() => {
           let predicts = model.predict(tFrame).arraySync()[0];
           let max = Math.max(...predicts);
-          let predictWord = word[predicts.indexOf(max)];
-          const fontScale = 2;
-          console.log(predictWord)
-          resizedImg.putText(
-            String(predictWord),
-            new cv.Point(300, 300),
-            cv.FONT_ITALIC,
-            fontScale,
-            { color: green, thickness: 2 }
-          );
+
+          if (max > 0.8) {
+            predictWord = word[predicts.indexOf(max)];
+            console.log(predictWord + "-" + max);
+          }
         }, 300)
+      } else {
+        predictWord = "";
       }
+
+      resizedImg.putText(String(predictWord), new cv.Point2(300, 60), font, 1, green, 1);
       cv.imshow('background', bg);
       cv.imshow('difference', diff);
       cv.imshow('handMask2', handMask);
