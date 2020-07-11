@@ -3,7 +3,7 @@ const express = require("express");
 const app = express();
 var events = require("events");
 
-const quiz = require("./quiz");
+const { getPage, doAnswer } = require("./quiz");
 
 const { loadModel, predictData } = require("./train/model");
 const { convertBufferToTensor } = require("./train/dataset");
@@ -20,7 +20,9 @@ const server = require("http").createServer(app);
 const io = require("socket.io")(server);
 
 // create event emitter for answer the question
-var eventEmitter = new events.EventEmitter();
+const event = require("events");
+// init nodejs event
+let emitter = new event.EventEmitter();
 
 app.use(express.static("public"));
 
@@ -77,14 +79,23 @@ io.on("connection", (socket) => {
   });
 });
 
-setInterval(() => {
-  eventEmitter.emit("data", Math.random( Math.floor(Math.random() * Math.floor(3))));
-}, 5000);
+emitter.on("page", (page) => {
+  console.log("got page", page);
 
-quiz();
+  setInterval(async () => {
+    let data = {
+      question: 2,
+      answer: Math.floor(Math.random() * Math.floor(3)),
+    };
+    await doAnswer(data, page);
+  }, 2000);
+});
 
 // main
 (async () => {
+  // render page and emit current page to server.js
+  await getPage(emitter);
+
   var k = 0;
   var bg = null;
   var predictWord = "";
@@ -149,7 +160,7 @@ quiz();
         font,
         1,
         green,
-        1,
+        1
       );
       cv.imshow("background", bg);
       cv.imshow("difference", diff);
