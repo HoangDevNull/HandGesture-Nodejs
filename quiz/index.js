@@ -1,5 +1,4 @@
 const puppeteer = require("puppeteer");
-
 require("dotenv").config();
 
 const {
@@ -9,7 +8,7 @@ const {
   googleLogin,
 } = require("./helper");
 
-(async () => {
+module.exports = async function quiz(eventEmiter) {
   // const username = await usernameQuestion();
   // const password = await passwordQuestion();
 
@@ -22,7 +21,7 @@ const {
 
   page.waitFor(1000);
   await page.goto(
-    "https://docs.google.com/forms/d/e/1FAIpQLSek-GKkIm87UhaZnpCbMOxmIIDWvlmr-rfjHKR9NAEttOGPtQ/viewform"
+    "https://docs.google.com/forms/d/e/1FAIpQLSek-GKkIm87UhaZnpCbMOxmIIDWvlmr-rfjHKR9NAEttOGPtQ/viewform",
   );
   // wait for page navigate finsished
   const navigationPromise = page.waitForNavigation();
@@ -33,14 +32,12 @@ const {
   // wait for page load full content
   await navigationPromise;
 
-
-
-  //   await page.screenshot({ path: "test.png" });
+  const event = 1;
 
   // browser coding
-  await page.evaluate(() => {
+  await page.evaluate((event) => {
     const questionWrapper = document.querySelectorAll(
-      ".freebirdFormviewerViewItemList .freebirdFormviewerViewNumberedItemContainer"
+      ".freebirdFormviewerViewItemList .freebirdFormviewerViewNumberedItemContainer",
     );
 
     // just go throught childnode and get the list of answer
@@ -50,10 +47,9 @@ const {
           .childNodes[0].childNodes;
       return answerItem;
     });
-
     // question 1 anwser 2
-    let answer1 = s[0][1].querySelector("label");
+    let answer1 = s[0][event].querySelector("label");
     answer1.click();
-  });
+  }, event);
   await closeBrowser(browser);
-})();
+};
