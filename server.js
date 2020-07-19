@@ -14,15 +14,14 @@ const {
   saveHSVConfig,
   transformToArray,
   removeBackground,
+  mode,
 } = require("./utils");
 // create server
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
 
-// create event emitter for answer the question
-const event = require("events");
 // init nodejs event
-let emitter = new event.EventEmitter();
+let emitter = new events.EventEmitter();
 
 app.use(express.static("public"));
 
@@ -54,6 +53,11 @@ const word = [
   "palm_moved",
   "c",
 ];
+
+const answerArr = ["index", "l", "fist", "palm"];
+let question = 0;
+var isAnswerCompleted = true;
+var timeout = null;
 var img;
 var skinRange = null;
 const kernel = new cv.Mat(3, 3, cv.CV_8U, 1);
@@ -79,100 +83,121 @@ io.on("connection", (socket) => {
   });
 });
 
-emitter.on("page", (page) => {
-  console.log("got page", page);
-
-  setInterval(async () => {
-    let data = {
-      question: 2,
-      answer: Math.floor(Math.random() * Math.floor(3)),
-    };
-    await doAnswer(data, page);
-  }, 2000);
-});
-
 // main
 (async () => {
-  // render page and emit current page to server.js
-  await getPage(emitter);
+  emitter.on("page", async (page) => {
+    var k = 0;
+    var bg = null;
+    var predictWord = "";
+    const model = await loadModel("model_3");
+    // var bgSubtractor = new cv.BackgroundSubtractorMOG2(500, 16, false);
 
-  var k = 0;
-  var bg = null;
-  var predictWord = "";
-  const model = await loadModel("model_3");
-  // var bgSubtractor = new cv.BackgroundSubtractorMOG2(500, 16, false);
+    const intvl = setInterval(async () => {
+      if (img) {
+        let resizedImg = img.resizeToMax(640).flip(1);
+        // Create croped image to wrap the hand
+        let cropedImage = resizedImg
+          .getRegion(new cv.Rect(0, 0, 300, 350))
+          .copy();
+        // get background image
+        if (k < 20) {
+          bg = cropedImage.copy();
+          k++;
+        }
 
-  const intvl = setInterval(async () => {
-    if (img) {
-      let resizedImg = img.resizeToMax(640).flip(1);
-      // Create croped image to wrap the hand
-      let cropedImage = resizedImg
-        .getRegion(new cv.Rect(0, 0, 300, 350))
-        .copy();
-      // get background image
-      if (k < 20) {
-        bg = cropedImage.copy();
-        k++;
-      }
+        // let out = bgSubtractor.apply(cropedImage).copy();
+        // difference image
+        let diff = cropedImage.absdiff(bg).copy();
 
-      // let out = bgSubtractor.apply(cropedImage).copy();
-      // difference image
-      let diff = cropedImage.absdiff(bg).copy();
+        const handMask = makeHandMask(diff, skinRange);
 
-      const handMask = makeHandMask(diff, skinRange);
+        const handContour = getHandContour(handMask);
 
-      const handContour = getHandContour(handMask);
+        if (!handContour) {
+          return;
+        }
 
-      if (!handContour) {
-        return;
-      }
+        const imgContours =
+          handContour &&
+          handContour.map((contour) => {
+            return contour.getPoints();
+          });
 
-      const imgContours =
-        handContour &&
-        handContour.map((contour) => {
-          return contour.getPoints();
-        });
+        // draw bounding box and center line
+        resizedImg.drawContours(imgContours, -1, blue, 2);
+        const imageData = handMask.resize(120, 320);
 
-      // draw bounding box and center line
-      resizedImg.drawContours(imgContours, -1, blue, 2);
-      const imageData = handMask.resize(120, 320);
+        let tFrame = await convertBufferToTensor(imageData);
 
-      let tFrame = await convertBufferToTensor(imageData);
+        let contourArea =
+          handContour[0] !== undefined ? handContour[0].area : 0;
 
-      let contourArea = handContour[0] !== undefined ? handContour[0].area : 0;
-      if (model && contourArea > 20000) {
-        setTimeout(() => {
+        resizedImg.putText(
+          String(predictWord),
+          new cv.Point2(300, 60),
+          font,
+          1,
+          green,
+          1,
+        );
+        cv.imshow("background", bg);
+        cv.imshow("difference", diff);
+        cv.imshow("handMask2", handMask);
+        cv.imshow("result", resizedImg);
+
+        if (model && contourArea > 20000) {
           let predicts = model.predict(tFrame).arraySync()[0];
           let max = Math.max(...predicts);
+          if (!isAnswerCompleted && timeout) {
+            console.log("clear timeout");
+          } else {
+            //  false
+            isAnswerCompleted = false;
+            console.log("start timeout");
+            timeout = setTimeout(async () => {
+              if (max > 0.9) {
+                predictWord = word[predicts.indexOf(max)];
+                let answer = answerArr.indexOf(predictWord);
+                if (predictWord.includes("down")) question--;
+                if (predictWord.includes("thumb")) question++;
+                if (question >= 4) question = 0;
+                if (question < 0) question = 0;
 
-          if (max > 0.8) {
-            predictWord = word[predicts.indexOf(max)];
-            console.log(predictWord + "-" + max);
+                if (answer !== -1) {
+                  let data = {
+                    question: question,
+                    answer: answer,
+                  };
+
+                  console.log("start answer ", data);
+                  await doAnswer(data, page);
+                  isAnswerCompleted = true;
+                  timeout = null;
+                }
+              }
+            }, 1000);
           }
-        }, 300);
-      } else {
-        predictWord = "";
+        } else {
+          predictWord = "";
+        }
       }
+      const key = cv.waitKey(10);
+      done = key !== -1 && key !== 255;
+      if (done) {
+        clearInterval(intvl);
+        console.log("Key pressed, exiting.");
+        process.exit(1);
+      }
+    }, 200);
+  });
 
-      resizedImg.putText(
-        String(predictWord),
-        new cv.Point2(300, 60),
-        font,
-        1,
-        green,
-        1
-      );
-      cv.imshow("background", bg);
-      cv.imshow("difference", diff);
-      cv.imshow("handMask2", handMask);
-      cv.imshow("result", resizedImg);
-    }
-    const key = cv.waitKey(10);
-    done = key !== -1 && key !== 255;
-    if (done) {
-      clearInterval(intvl);
-      console.log("Key pressed, exiting.");
-      process.exit(1);
-    }
-  }, 200);
+  // render page and emit current page to server.js
+  await getPage(emitter);
 })();
+
+setInterval(() => {
+  if (!isAnswerCompleted) {
+    isAnswerCompleted = true;
+    console.log(isAnswerCompleted);
+  }
+}, 5000);

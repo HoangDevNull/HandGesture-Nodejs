@@ -22,7 +22,7 @@ module.exports = {
 
     page.waitFor(1000);
     await page.goto(
-      "https://docs.google.com/forms/d/e/1FAIpQLSek-GKkIm87UhaZnpCbMOxmIIDWvlmr-rfjHKR9NAEttOGPtQ/viewform"
+      "https://docs.google.com/forms/d/e/1FAIpQLSek-GKkIm87UhaZnpCbMOxmIIDWvlmr-rfjHKR9NAEttOGPtQ/viewform",
     );
     // wait for page navigate finsished
     const navigationPromise = page.waitForNavigation();
@@ -38,23 +38,22 @@ module.exports = {
     await closeBrowser(browser);
   },
   doAnswer: async (data, page) => {
+    console.log("do answer", data);
     // browser coding
     await page.evaluate(({ question, answer }) => {
-      console.log("got event", answer);
-
       const questionWrapper = document.querySelectorAll(
-        ".freebirdFormviewerViewItemList .freebirdFormviewerViewNumberedItemContainer"
+        ".freebirdFormviewerViewItemList .freebirdFormviewerViewNumberedItemContainer",
       );
 
-      // just go throught childnode and get the list of answer
+      // // just go throught childnode and get the list of answer
       var s = Array.from(questionWrapper).map((ele) => {
         const answerItem =
-          ele.childNodes[0].childNodes[1].childNodes[0].childNodes[0]
-            .childNodes[0].childNodes;
+          ele.childNodes[0].childNodes[0].childNodes[1].childNodes[1]
+            .childNodes[0].childNodes[0].childNodes[0];
         return answerItem;
       });
       // question 1 anwser 2
-      let answer1 = s[question][answer].querySelector("label");
+      let answer1 = s[question].childNodes[answer].querySelector("label");
       answer1.click();
     }, data);
   },
