@@ -28,7 +28,8 @@ module.exports = {
     const navigationPromise = page.waitForNavigation();
 
     // login to google form
-    await googleLogin(username, password, page);
+    // comment cái này lại. Cái này là đi login thằng google
+    // await googleLogin(username, password, page);
 
     // wait for page load full content
     await navigationPromise;

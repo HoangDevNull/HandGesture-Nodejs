@@ -132,6 +132,14 @@ function getModel2() {
         units: 128,
         activation: 'relu'
     }));
+    model.add(tf.layers.dense({
+        units: 64,
+        activation: 'relu'
+    }));
+     model.add(tf.layers.dense({
+        units: 32,
+        activation: 'relu'
+    }));
 
     const NUM_OUTPUT_CLASSES = 10;
     model.add(tf.layers.dense({
