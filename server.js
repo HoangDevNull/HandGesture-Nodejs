@@ -14,7 +14,7 @@ const {
   saveHSVConfig,
   transformToArray,
   removeBackground,
-  mode,
+  mode
 } = require("./utils");
 // create server
 const server = require("http").createServer(app);
@@ -28,9 +28,9 @@ app.use(express.static("public"));
 app.get("/", (req, res) => {
   res.redirect("index.html");
 });
-app.get("/handtrack", (req, res) => {
-  res.redirect("handtrack.html");
-});
+// app.get("/handtrack", (req, res) => {
+//   res.redirect("handtrack.html");
+// });
 
 server.listen(3000, () => {
   console.log("app is runing");
@@ -51,10 +51,22 @@ const word = [
   "index",
   "ok",
   "palm_moved",
+  "c"
+];
+const word_2 = [
+  "palm",
+  "l",
+  "fist",
+  "fist_moved",
+  "thumb",
+  "index",
+  "ok",
+  "palm_moved",
   "c",
+  "down"
 ];
 
-const answerArr = ["index", "l", "fist", "palm"];
+const answerArr = ["palm", "l", "fist", "c"];
 let question = 0;
 var isAnswerCompleted = true;
 var timeout = null;
@@ -89,7 +101,7 @@ io.on("connection", (socket) => {
     var k = 0;
     var bg = null;
     var predictWord = "";
-    const model = await loadModel("model_3");
+    const model = await loadModel("CNN_model");
     // var bgSubtractor = new cv.BackgroundSubtractorMOG2(500, 16, false);
 
     const intvl = setInterval(async () => {
@@ -138,7 +150,7 @@ io.on("connection", (socket) => {
           font,
           1,
           green,
-          1,
+          1
         );
         cv.imshow("background", bg);
         cv.imshow("difference", diff);
@@ -156,7 +168,7 @@ io.on("connection", (socket) => {
             console.log("start timeout");
             timeout = setTimeout(async () => {
               if (max > 0.9) {
-                predictWord = word[predicts.indexOf(max)];
+                predictWord = word_2[predicts.indexOf(max)];
                 let answer = answerArr.indexOf(predictWord);
                 if (predictWord.includes("down")) question--;
                 if (predictWord.includes("thumb")) question++;
@@ -166,7 +178,7 @@ io.on("connection", (socket) => {
                 if (answer !== -1) {
                   let data = {
                     question: question,
-                    answer: answer,
+                    answer: answer
                   };
 
                   console.log("start answer ", data);
