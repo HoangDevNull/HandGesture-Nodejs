@@ -167,7 +167,7 @@ async function train(model, data) {
     const { xs, ys } = data;
     const BATCH_SIZE = 64;
     return model.fit(xs, ys, {
-        epochs: 5,
+        epochs: 10,
         shuffle: true,
         verbose: 1
     });
